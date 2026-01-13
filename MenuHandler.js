@@ -266,8 +266,8 @@ class MenuHandler {
     await new Promise(resolve => setTimeout(resolve, 500));
     await this.sock.sendMessage(from, {
       location: {
-        degreesLatitude: 5.524566,
-        degreesLongitude: -73.363801
+        degreesLatitude: 5.703065466839204,
+        degreesLongitude: -72.94070205181986
       }
     });
     
