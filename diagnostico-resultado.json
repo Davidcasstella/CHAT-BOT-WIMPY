@@ -1,0 +1,30 @@
+{
+  "fecha": "2026-01-03T21:13:00.599Z",
+  "opcionesEnMenu": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "todasLasOpcionesPresentes": true,
+  "propiedadesDefinidas": [
+    "empresa_nombre",
+    "empresa_telefono",
+    "empresa_direccion",
+    "empresa_maps",
+    "cooldown",
+    "msg_texto_libre",
+    "menu_principal",
+    "catalogo_iphones",
+    "accesorios_iphone",
+    "catalogo_macbooks",
+    "accesorios_macbook",
+    "compatibilidad",
+    "horario",
+    "metodos_pago",
+    "garantia"
+  ],
+  "propiedadesFaltantes": []
+}

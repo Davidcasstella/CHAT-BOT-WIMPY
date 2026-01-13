@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📝 Editor Completo - Bot Genérico</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1600px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .nav-buttons { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .nav-btn {
+            padding: 12px 24px; background: white; color: #667eea; border: none;
+            border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.3s;
+        }
+        .nav-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .card {
+            background: white; border-radius: 15px; padding: 25px;
+            margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .card h2 {
+            color: #667eea; margin-bottom: 20px; font-size: 1.5em;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: bold; color: #374151; margin-bottom: 8px; }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px;
+            font-size: 1em; font-family: inherit; transition: border-color 0.3s;
+        }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #667eea; }
+        .form-group textarea { min-height: 200px; resize: vertical; }
+        .btn {
+            padding: 12px 24px; border: none; border-radius: 8px; font-size: 1em;
+            font-weight: bold; cursor: pointer; transition: all 0.3s; width: 100%; margin-top: 10px;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .btn-success { background: #10b981; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-small { padding: 6px 12px; font-size: 0.85em; width: auto; margin: 0; }
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; }
+        .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
+        .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+        .preview-box {
+            background: #25D366; color: white; padding: 20px; border-radius: 15px;
+            white-space: pre-wrap; font-family: 'Segoe UI', sans-serif;
+            margin-top: 15px; max-height: 400px; overflow-y: auto;
+        }
+        .info-note {
+            background: #fef3c7; border-left: 4px solid #f59e0b;
+            padding: 15px; margin: 15px 0; border-radius: 8px;
+        }
+        .opciones-menu { display: flex; flex-direction: column; gap: 20px; }
+        .opcion-card {
+            background: #f9fafb; padding: 20px; border-radius: 12px;
+            border: 3px solid #e5e7eb; transition: all 0.3s;
+        }
+        .opcion-card.activa { border-color: #10b981; background: #ecfdf5; }
+        .opcion-card.inactiva { border-color: #ef4444; background: #fef2f2; opacity: 0.8; }
+        .opcion-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #e5e7eb;
+        }
+        .opcion-title {
+            display: flex; align-items: center; gap: 12px;
+            font-size: 1.3em; font-weight: bold; color: #374151;
+        }
+        .opcion-toggle {
+            position: relative; width: 70px; height: 35px; background: #d1d5db;
+            border-radius: 18px; cursor: pointer; transition: all 0.3s;
+        }
+        .opcion-toggle.activo { background: #10b981; }
+        .opcion-toggle::after {
+            content: ''; position: absolute; top: 4px; left: 4px;
+            width: 27px; height: 27px; background: white; border-radius: 50%;
+            transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .opcion-toggle.activo::after { left: 39px; }
+        .opcion-estado-badge {
+            padding: 6px 14px; border-radius: 20px;
+            font-size: 0.85em; font-weight: bold;
+        }
+        .opcion-estado-badge.activa { background: #10b981; color: white; }
+        .opcion-estado-badge.inactiva { background: #ef4444; color: white; }
+        .opcion-fields { display: grid; grid-template-columns: 80px 1fr; gap: 15px; margin-bottom: 15px; }
+        .opcion-content { margin-top: 15px; }
+        .opcion-content textarea { min-height: 250px; }
+        .emoji-input { font-size: 2em; text-align: center; padding: 10px; }
+        .file-input-container {
+            display: flex; gap: 10px; align-items: center; margin-top: 10px;
+        }
+        .file-input-label {
+            padding: 10px 20px; background: #3b82f6; color: white;
+            border-radius: 8px; cursor: pointer; transition: all 0.3s;
+        }
+        .file-input-label:hover { background: #2563eb; }
+        .file-input-label input[type="file"] { display: none; }
+        .numeros-bloqueados { display: flex; flex-direction: column; gap: 10px; }
+        .numero-item {
+            background: #fee2e2; padding: 12px; border-radius: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid #ef4444;
+        }
+        .numero-texto { font-weight: bold; color: #991b1b; }
+        .add-numero-container { display: flex; gap: 10px; margin-top: 10px; }
+        .add-numero-container input { flex: 1; }
+        .audio-section {
+            background: #fef3c7; padding: 20px; border-radius: 8px;
+            margin: 15px 0; border: 2px dashed #f59e0b;
+        }
+        .audio-player { width: 100%; margin: 10px 0; }
+        
+        /* NUEVO: Estilos para fotos del catálogo */
+        .fotos-catalogo-section {
+            background: #ede9fe; padding: 20px; border-radius: 8px;
+            margin: 15px 0; border: 2px dashed #8b5cf6;
+        }
+        .fotos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .foto-item {
+            position: relative;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .foto-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+        .foto-item-info {
+            padding: 10px;
+        }
+        .foto-item-descripcion {
+            font-size: 0.85em;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        .foto-item-delete {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .foto-item-delete:hover {
+            background: #dc2626;
+        }
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+        .toggle-label {
+            font-weight: bold;
+            color: #374151;
+            font-size: 1.1em;
+        }
+
+        /* NUEVO: Estilos para PDFs del catálogo */
+        .pdfs-catalogo-section {
+            background: #fef3c7;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 2px dashed #f59e0b;
+        }
+        .pdfs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .pdf-item {
+            position: relative;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .pdf-item-icon {
+            font-size: 3em;
+            color: #ef4444;
+        }
+        .pdf-item-info {
+            flex: 1;
+        }
+        .pdf-item-nombre {
+            font-weight: bold;
+            color: #374151;
+            word-break: break-word;
+        }
+        .pdf-item-descripcion {
+            font-size: 0.85em;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        .pdf-item-peso {
+            font-size: 0.75em;
+            color: #10b981;
+            margin-top: 4px;
+        }
+        .pdf-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .pdf-item-btn {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s;
+        }
+        .pdf-item-btn-view {
+            background: #3b82f6;
+            color: white;
+        }
+        .pdf-item-btn-view:hover {
+            background: #2563eb;
+        }
+        .pdf-item-btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+        .pdf-item-btn-delete:hover {
+            background: #dc2626;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .opcion-fields { grid-template-columns: 1fr; }
+            .fotos-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+            .pdfs-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 Editor Completo del Bot</h1>
+            <p>Personaliza todo: audio, fotos, opciones y configuración ⚡</p>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="nav-btn" onclick="window.location.href='/'">🏠 Volver al Panel</button>
+            <button class="nav-btn" onclick="cargarDelServidor()">⬇️ Cargar del Servidor</button>
+            <button class="nav-btn" onclick="guardarTodo()">💾 Guardar Todos los Cambios</button>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <!-- Audio de Saludo -->
+        <div class="card">
+            <h2>🎤 Audio de Saludo</h2>
+            <div class="audio-section">
+                <div class="form-group">
+                    <label>Audio actual:</label>
+                    <div id="audioStatus">
+                        <p style="color: #6b7280;">Cargando...</p>
+                    </div>
+                    <audio id="audioPlayer" class="audio-player" controls style="display: none;">
+                        <source src="/audio/saludo-daniela.ogg" type="audio/ogg">
+                        Tu navegador no soporta audio.
+                    </audio>
+                </div>
+                <div class="file-input-container">
+                    <label class="file-input-label">
+                        📁 Seleccionar Audio (OGG/MP3)
+                        <input type="file" id="audioFile" accept=".ogg,.mp3,audio/ogg,audio/mpeg" onchange="subirAudio()">
+                    </label>
+                    <button class="btn btn-primary btn-small" onclick="verificarAudio()">🔄 Verificar Audio</button>
+                </div>
+                <small style="color: #6b7280; display: block; margin-top: 10px;">
+                    Este audio se enviará al inicio de cada conversación
+                </small>
+            </div>
+        </div>
+
+        <!-- NUEVO: Fotos del Catálogo -->
+        <div class="card">
+            <h2>📸 Fotos del Catálogo (después del menú)</h2>
+            <div class="info-note">
+                <strong>ℹ️ Cómo funciona:</strong><br>
+                • Estas fotos se envían DESPUÉS del menú principal<br>
+                • Activa/desactiva el envío de fotos con el toggle<br>
+                • Sube todas las fotos que quieras mostrar<br>
+                • El bot enviará todas las fotos en orden
+            </div>
+            <div class="fotos-catalogo-section">
+                <div class="toggle-container">
+                    <span class="toggle-label">Enviar fotos después del menú:</span>
+                    <div class="opcion-toggle" id="toggleFotosCatalogo" onclick="toggleFotosCatalogo()"></div>
+                    <span class="opcion-estado-badge" id="estadoFotosCatalogo">❌ Desactivado</span>
+                </div>
+                
+                <div class="file-input-container">
+                    <label class="file-input-label">
+                        📁 Agregar Foto al Catálogo
+                        <input type="file" id="fotoCatalogoFile" accept="image/*" onchange="subirFotoCatalogo()">
+                    </label>
+                </div>
+                
+                <input type="text" id="fotoCatalogoDesc" placeholder="Descripción de la foto (opcional)"
+                       style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px; border: 1px solid #cbd5e1;">
+                
+                <div class="fotos-grid" id="fotosGrid">
+                    <!-- Se llenarán dinámicamente -->
+                </div>
+            </div>
+        </div>
+
+        <!-- NUEVO: PDFs del Catálogo -->
+        <div class="card">
+            <h2>📄 PDFs del Catálogo (después del menú)</h2>
+            <div class="info-note">
+                <strong>ℹ️ Cómo funciona:</strong><br>
+                • Estos PDFs se envían DESPUÉS del menú principal (junto con las fotos si están activas)<br>
+                • Activa/desactiva el envío de PDFs con el toggle<br>
+                • Sube todos los PDFs que quieras mostrar (menús, catálogos, promociones, etc.)<br>
+                • El bot enviará todos los PDFs como documentos adjuntos
+            </div>
+            <div class="pdfs-catalogo-section">
+                <div class="toggle-container">
+                    <span class="toggle-label">Enviar PDFs después del menú:</span>
+                    <div class="opcion-toggle" id="togglePdfsCatalogo" onclick="togglePdfsCatalogo()"></div>
+                    <span class="opcion-estado-badge" id="estadoPdfsCatalogo">❌ Desactivado</span>
+                </div>
+
+                <div class="file-input-container">
+                    <label class="file-input-label" style="background: #f59e0b;">
+                        📄 Agregar PDF al Catálogo
+                        <input type="file" id="pdfCatalogoFile" accept=".pdf,application/pdf" onchange="subirPdfCatalogo()">
+                    </label>
+                </div>
+
+                <input type="text" id="pdfCatalogoDesc" placeholder="Descripción del PDF (opcional)"
+                       style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px; border: 1px solid #cbd5e1;">
+
+                <div class="pdfs-grid" id="pdfsGrid">
+                    <!-- Se llenarán dinámicamente -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuración General -->
+        <div class="card">
+            <h2>👤 Configuración General</h2>
+
+            <!-- Saludo Personalizado -->
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label>💬 Mensaje de Saludo Inicial:</label>
+                <textarea id="saludo_inicial" rows="3" placeholder="Soy Yesid de Wimpy, ¿en qué puedo ayudarte? 😊"
+                    style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #10b981; font-size: 1em; resize: vertical;"></textarea>
+                <small style="color: #6b7280; display: block; margin-top: 5px;">
+                    Este mensaje aparece al inicio del menú. Puedes personalizarlo como quieras.
+                </small>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>🚫 Números Bloqueados:</label>
+                    <div class="numeros-bloqueados" id="numerosBloquedosList"></div>
+                    <div class="add-numero-container">
+                        <input type="text" id="nuevoNumeroBloqueado" placeholder="Ej: 3012345678">
+                        <button class="btn btn-danger btn-small" onclick="agregarNumeroBloqueado()">➕ Agregar</button>
+                    </div>
+                    <small style="color: #6b7280; display: block; margin-top: 5px;">
+                        El bot no responderá a estos números
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información de la Empresa -->
+        <div class="card">
+            <h2>🏢 Información de la Empresa</h2>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Nombre de la Empresa:</label>
+                    <input type="text" id="empresa_nombre" placeholder="Mi Empresa">
+                </div>
+                <div class="form-group">
+                    <label>Teléfono de Contacto:</label>
+                    <input type="text" id="empresa_telefono" placeholder="300 1234567">
+                </div>
+                <div class="form-group">
+                    <label>Dirección:</label>
+                    <input type="text" id="empresa_direccion" placeholder="Calle 123 # 45-67">
+                </div>
+                <div class="form-group">
+                    <label>Link de Google Maps:</label>
+                    <input type="text" id="empresa_maps" placeholder="https://maps.app.goo.gl/...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista Previa del Menú -->
+        <div class="card">
+            <h2>📋 Vista Previa del Menú Principal</h2>
+            <div class="info-note">
+                <strong>ℹ️ Información:</strong> Este menú se genera automáticamente según las opciones activas.
+            </div>
+            <div class="preview-box" id="preview_menu">Vista previa...</div>
+        </div>
+
+        <!-- RESTO DEL HTML CONTINÚA EN PARTE 2... -->
+         <!-- editor.html - PARTE 2: Continuación del HTML -->
+<!-- AGREGAR DESPUÉS DE LA PARTE 1 -->
+
+        <!-- Editor Completo de Opciones -->
+        <div class="card">
+            <h2>🎛️ Gestión Completa de Opciones del Menú</h2>
+            <div class="info-note">
+                <strong>💡 Instrucciones:</strong><br>
+                • Activa/desactiva cada opción con el toggle<br>
+                • Edita el emoji, nombre y contenido<br>
+                • Los cambios se guardan al hacer clic en "💾 Guardar"
+            </div>
+            <div class="opciones-menu" id="opcionesMenuContainer"></div>
+        </div>
+
+        <!-- Contenidos adicionales -->
+       <!-- Contenidos adicionales - SIN COMPATIBILIDAD -->
+        <div class="card">
+            <h2>📅 Información Adicional</h2>
+            <div class="form-group">
+                <label>📅 Horario de Atención:</label>
+                <textarea id="horario" placeholder="Lunes a Sábado: 7:00 AM - 8:00 PM&#10;Domingos: 8:00 AM - 11:00 AM"></textarea>
+            </div>
+        </div>
+
+        <!-- Configuración del Bot -->
+        <div class="card">
+            <h2>⚙️ Configuración del Bot</h2>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>⏰ Cooldown (minutos):</label>
+                    <input type="number" id="cooldown" placeholder="60" min="1">
+                    <small style="color: #6b7280; display: block; margin-top: 5px;">
+                        Tiempo de espera antes de otra respuesta automática
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label>💬 Mensaje de derivación a asesor:</label>
+                    <input type="text" id="msg_texto_libre" placeholder="Vale ya te respondo">
+                    <small style="color: #6b7280; display: block; margin-top: 5px;">
+                        Mensaje cuando el usuario escribe texto libre
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-success" onclick="guardarTodo()" style="font-size: 1.2em; padding: 15px;">
+            💾 Guardar Todos los Cambios
+        </button>
+    </div>
+
+    <!-- JAVASCRIPT EN PARTE 3 -->
+     // editor.html - PARTE 3: JavaScript Completo
+// AGREGAR ANTES DE </body>
+
+<script>
+    const API_URL = window.location.origin;
+    let configActual = null;
+
+    function mostrarAlerta(mensaje, tipo = 'success') {
+        const container = document.getElementById('alertContainer');
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${tipo}`;
+        alert.textContent = mensaje;
+        alert.style.display = 'block';
+        container.appendChild(alert);
+        setTimeout(() => alert.remove(), 5000);
+    }
+
+    // ========== AUDIO ==========
+    async function verificarAudio() {
+        try {
+            const response = await fetch(`${API_URL}/check-audio`);
+            const data = await response.json();
+            const statusDiv = document.getElementById('audioStatus');
+            const player = document.getElementById('audioPlayer');
+
+            if (data.exists) {
+                const extension = data.extension || '.ogg';
+                const mimeType = extension === '.mp3' ? 'audio/mpeg' : 'audio/ogg';
+
+                statusDiv.innerHTML = `<p style="color: #10b981;">✅ Audio cargado: ${data.filename} (${(data.size/1024).toFixed(2)} KB)</p>`;
+
+                // Actualizar la fuente del reproductor con la extensión correcta
+                player.innerHTML = `<source src="/audio/${data.filename}?t=${Date.now()}" type="${mimeType}">Tu navegador no soporta audio.`;
+                player.style.display = 'block';
+                player.load();
+            } else {
+                statusDiv.innerHTML = `<p style="color: #ef4444;">❌ No hay audio cargado</p>`;
+                player.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Error verificando audio:', error);
+            mostrarAlerta('Error verificando audio', 'error');
+        }
+    }
+
+    async function subirAudio() {
+        const fileInput = document.getElementById('audioFile');
+        const file = fileInput.files[0];
+        
+        if (!file) return;
+        
+        const formData = new FormData();
+        formData.append('audio', file);
+        
+        try {
+            mostrarAlerta('⏳ Subiendo audio...', 'success');
+            const response = await fetch(`${API_URL}/upload-audio`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                mostrarAlerta('✅ Audio subido correctamente', 'success');
+                verificarAudio();
+            } else {
+                mostrarAlerta('❌ Error al subir audio', 'error');
+            }
+        } catch (error) {
+            mostrarAlerta('❌ Error de conexión', 'error');
+        }
+    }
+
+    // ========== FOTOS DEL CATÁLOGO - CORREGIDO ==========
+    async function cargarFotosCatalogo() {
+        try {
+            console.log('📸 Cargando fotos del catálogo...');
+            const response = await fetch(`${API_URL}/list-fotos-catalogo`);
+            const data = await response.json();
+            
+            console.log('📸 Datos recibidos:', data);
+            
+            // Actualizar toggle
+            const toggle = document.getElementById('toggleFotosCatalogo');
+            const estado = document.getElementById('estadoFotosCatalogo');
+            
+            if (data.habilitado) {
+                toggle.classList.add('activo');
+                estado.className = 'opcion-estado-badge activa';
+                estado.textContent = '✅ Activado';
+            } else {
+                toggle.classList.remove('activo');
+                estado.className = 'opcion-estado-badge inactiva';
+                estado.textContent = '❌ Desactivado';
+            }
+            
+            // Renderizar fotos
+            renderizarFotosCatalogo(data.fotos || []);
+            
+            console.log(`📸 Total de fotos: ${data.fotos?.length || 0}`);
+        } catch (error) {
+            console.error('❌ Error cargando fotos:', error);
+            mostrarAlerta('Error al cargar fotos del catálogo', 'error');
+        }
+    }
+
+   function renderizarFotosCatalogo(fotos) {
+        const grid = document.getElementById('fotosGrid');
+        grid.innerHTML = '';
+        
+        console.log(`📸 Renderizando ${fotos.length} fotos`);
+        
+        if (fotos.length === 0) {
+            grid.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 40px; grid-column: 1/-1;">No hay fotos en el catálogo. ¡Sube algunas!</div>';
+            return;
+        }
+        
+        fotos.forEach((foto, index) => {
+            const fotoItem = document.createElement('div');
+            fotoItem.className = 'foto-item';
+            
+            // Mostrar peso si está disponible
+            const pesoInfo = foto.pesoKB ? `<div style="font-size: 0.75em; color: #10b981; margin-top: 4px;">📦 ${foto.pesoKB} KB</div>` : '';
+            
+            fotoItem.innerHTML = `
+                <img src="${foto.path}?t=${Date.now()}" alt="Foto ${index + 1}" onerror="this.style.display='none'">
+                <button class="foto-item-delete" onclick="eliminarFotoCatalogo('${foto.filename}')" title="Eliminar">
+                    ×
+                </button>
+                <div class="foto-item-info">
+                    <div style="font-weight: bold; color: #374151;">Foto ${index + 1}</div>
+                    <div class="foto-item-descripcion">${foto.descripcion || 'Sin descripción'}</div>
+                    ${pesoInfo}
+                </div>
+            `;
+            grid.appendChild(fotoItem);
+        });
+    }
+
+    async function toggleFotosCatalogo() {
+        try {
+            console.log('🔄 Cambiando estado de fotos del catálogo...');
+            
+            const response = await fetch(`${API_URL}/toggle-fotos-catalogo`, {
+                method: 'POST'
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('📸 Nuevo estado:', data.habilitado);
+                
+                const toggle = document.getElementById('toggleFotosCatalogo');
+                const estado = document.getElementById('estadoFotosCatalogo');
+                
+                if (data.habilitado) {
+                    toggle.classList.add('activo');
+                    estado.className = 'opcion-estado-badge activa';
+                    estado.textContent = '✅ Activado';
+                    mostrarAlerta('✅ Fotos del catálogo activadas - Se enviarán después del menú', 'success');
+                } else {
+                    toggle.classList.remove('activo');
+                    estado.className = 'opcion-estado-badge inactiva';
+                    estado.textContent = '❌ Desactivado';
+                    mostrarAlerta('⚠️ Fotos del catálogo desactivadas', 'success');
+                }
+            } else {
+                mostrarAlerta('❌ Error al cambiar estado', 'error');
+            }
+        } catch (error) {
+            console.error('❌ Error:', error);
+            mostrarAlerta('❌ Error al cambiar estado', 'error');
+        }
+    }
+
+   async function subirFotoCatalogo() {
+        const fileInput = document.getElementById('fotoCatalogoFile');
+        const descripcionInput = document.getElementById('fotoCatalogoDesc');
+        const file = fileInput.files[0];
+        
+        if (!file) return;
+        
+        const pesoOriginalMB = (file.size / 1024 / 1024).toFixed(2);
+        
+        if (file.size > 10 * 1024 * 1024) {
+            mostrarAlerta(`❌ Imagen muy grande (${pesoOriginalMB} MB). Máximo 10 MB.`, 'error');
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('foto', file);
+        formData.append('descripcion', descripcionInput.value);
+        
+        try {
+            mostrarAlerta(`⏳ Subiendo y comprimiendo imagen (${pesoOriginalMB} MB)...`, 'success');
+            const response = await fetch(`${API_URL}/upload-foto-catalogo`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                mostrarAlerta(
+                    `✅ Foto subida (${data.totalFotos} fotos)\n` +
+                    `📉 Comprimida: ${data.pesoOriginal} → ${data.pesoFinal} (${data.reduccion} menos)`,
+                    'success'
+                );
+                fileInput.value = '';
+                descripcionInput.value = '';
+                await cargarFotosCatalogo();
+            } else {
+                mostrarAlerta('❌ Error al subir foto', 'error');
+            }
+        } catch (error) {
+            mostrarAlerta('❌ Error de conexión', 'error');
+        }
+    }
+    async function eliminarFotoCatalogo(filename) {
+        if (!confirm('¿Eliminar esta foto del catálogo?')) return;
+
+        try {
+            const response = await fetch(`${API_URL}/delete-foto-catalogo/${filename}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                mostrarAlerta('✅ Foto eliminada', 'success');
+                await cargarFotosCatalogo(); // Recargar fotos
+            } else {
+                mostrarAlerta('❌ Error al eliminar foto', 'error');
+            }
+        } catch (error) {
+            mostrarAlerta('❌ Error de conexión', 'error');
+        }
+    }
+
+    // ========== PDFs DEL CATÁLOGO ==========
+    async function cargarPdfsCatalogo() {
+        try {
+            console.log('📄 Cargando PDFs del catálogo...');
+            const response = await fetch(`${API_URL}/list-pdfs-catalogo`);
+            const data = await response.json();
+
+            console.log('📄 Datos recibidos:', data);
+
+            // Actualizar toggle
+            const toggle = document.getElementById('togglePdfsCatalogo');
+            const estado = document.getElementById('estadoPdfsCatalogo');
+
+            if (data.habilitado) {
+                toggle.classList.add('activo');
+                estado.className = 'opcion-estado-badge activa';
+                estado.textContent = '✅ Activado';
+            } else {
+                toggle.classList.remove('activo');
+                estado.className = 'opcion-estado-badge inactiva';
+                estado.textContent = '❌ Desactivado';
+            }
+
+            // Renderizar PDFs
+            renderizarPdfsCatalogo(data.pdfs || []);
+
+            console.log(`📄 Total de PDFs: ${data.pdfs?.length || 0}`);
+        } catch (error) {
+            console.error('❌ Error cargando PDFs:', error);
+            mostrarAlerta('Error al cargar PDFs del catálogo', 'error');
+        }
+    }
+
+    function renderizarPdfsCatalogo(pdfs) {
+        const grid = document.getElementById('pdfsGrid');
+        grid.innerHTML = '';
+
+        console.log(`📄 Renderizando ${pdfs.length} PDFs`);
+
+        if (pdfs.length === 0) {
+            grid.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 40px; grid-column: 1/-1;">No hay PDFs en el catálogo. ¡Sube algunos!</div>';
+            return;
+        }
+
+        pdfs.forEach((pdf, index) => {
+            const pdfItem = document.createElement('div');
+            pdfItem.className = 'pdf-item';
+
+            pdfItem.innerHTML = `
+                <div class="pdf-item-icon">📄</div>
+                <div class="pdf-item-info">
+                    <div class="pdf-item-nombre">${pdf.nombreOriginal || pdf.filename}</div>
+                    <div class="pdf-item-descripcion">${pdf.descripcion || 'Sin descripción'}</div>
+                    <div class="pdf-item-peso">📦 ${pdf.pesoKB} KB</div>
+                </div>
+                <div class="pdf-item-actions">
+                    <button class="pdf-item-btn pdf-item-btn-view" onclick="window.open('${pdf.path}', '_blank')" title="Ver PDF">
+                        👁️
+                    </button>
+                    <button class="pdf-item-btn pdf-item-btn-delete" onclick="eliminarPdfCatalogo('${pdf.filename}')" title="Eliminar">
+                        🗑️
+                    </button>
+                </div>
+            `;
+            grid.appendChild(pdfItem);
+        });
+    }
+
+    async function togglePdfsCatalogo() {
+        try {
+            console.log('🔄 Cambiando estado de PDFs del catálogo...');
+
+            const response = await fetch(`${API_URL}/toggle-pdfs-catalogo`, {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('📄 Nuevo estado:', data.habilitado);
+
+                const toggle = document.getElementById('togglePdfsCatalogo');
+                const estado = document.getElementById('estadoPdfsCatalogo');
+
+                if (data.habilitado) {
+                    toggle.classList.add('activo');
+                    estado.className = 'opcion-estado-badge activa';
+                    estado.textContent = '✅ Activado';
+                    mostrarAlerta('✅ PDFs del catálogo activados - Se enviarán después del menú', 'success');
+                } else {
+                    toggle.classList.remove('activo');
+                    estado.className = 'opcion-estado-badge inactiva';
+                    estado.textContent = '❌ Desactivado';
+                    mostrarAlerta('⚠️ PDFs del catálogo desactivados', 'success');
+                }
+            } else {
+                mostrarAlerta('❌ Error al cambiar estado', 'error');
+            }
+        } catch (error) {
+            console.error('❌ Error:', error);
+            mostrarAlerta('❌ Error al cambiar estado', 'error');
+        }
+    }
+
+    async function subirPdfCatalogo() {
+        const fileInput = document.getElementById('pdfCatalogoFile');
+        const descripcionInput = document.getElementById('pdfCatalogoDesc');
+        const file = fileInput.files[0];
+
+        if (!file) return;
+
+        const pesoMB = (file.size / 1024 / 1024).toFixed(2);
+
+        if (file.size > 20 * 1024 * 1024) {
+            mostrarAlerta(`❌ PDF muy grande (${pesoMB} MB). Máximo 20 MB.`, 'error');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('pdf', file);
+        formData.append('descripcion', descripcionInput.value);
+
+        try {
+            mostrarAlerta(`⏳ Subiendo PDF (${pesoMB} MB)...`, 'success');
+            const response = await fetch(`${API_URL}/upload-pdf-catalogo`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                mostrarAlerta(
+                    `✅ PDF subido correctamente (${data.totalPdfs} PDFs en total)\n` +
+                    `📄 ${data.nombreOriginal} - ${data.pesoKB}`,
+                    'success'
+                );
+                fileInput.value = '';
+                descripcionInput.value = '';
+                await cargarPdfsCatalogo();
+            } else {
+                const error = await response.json();
+                mostrarAlerta('❌ Error al subir PDF: ' + (error.error || 'Error desconocido'), 'error');
+            }
+        } catch (error) {
+            mostrarAlerta('❌ Error de conexión', 'error');
+        }
+    }
+
+    async function eliminarPdfCatalogo(filename) {
+        if (!confirm('¿Eliminar este PDF del catálogo?')) return;
+
+        try {
+            const response = await fetch(`${API_URL}/delete-pdf-catalogo/${filename}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                mostrarAlerta('✅ PDF eliminado', 'success');
+                await cargarPdfsCatalogo();
+            } else {
+                mostrarAlerta('❌ Error al eliminar PDF', 'error');
+            }
+        } catch (error) {
+            mostrarAlerta('❌ Error de conexión', 'error');
+        }
+    }
+
+    // CONTINÚA EN PARTE 2...
+    // ========== CONFIGURACIÓN ==========
+    async function cargarDelServidor() {
+        try {
+            console.log('🔄 Cargando configuración del servidor...');
+            const response = await fetch(`${API_URL}/get-config`);
+            configActual = await response.json();
+            
+            console.log('✅ Configuración cargada:', configActual);
+            
+            aplicarConfiguracion(configActual);
+            verificarAudio();
+            await cargarFotosCatalogo(); // IMPORTANTE: Cargar fotos
+            await cargarPdfsCatalogo(); // IMPORTANTE: Cargar PDFs
+
+            mostrarAlerta('✅ Configuración cargada', 'success');
+        } catch (error) {
+            console.error('❌ Error:', error);
+            mostrarAlerta('⚠️ Error de conexión', 'error');
+        }
+    }
+
+    function aplicarConfiguracion(config) {
+        // Campos básicos
+        document.getElementById('empresa_nombre').value = config.empresa_nombre || '';
+        document.getElementById('empresa_telefono').value = config.empresa_telefono || '';
+        document.getElementById('empresa_direccion').value = config.empresa_direccion || '';
+        document.getElementById('empresa_maps').value = config.empresa_maps || '';
+
+        // Saludo inicial - extraer del menu_principal o usar valor por defecto
+        const saludoDefault = `Soy ${config.nombre_asesor || 'Yesid'} de ${config.empresa_nombre || 'Wimpy'}, ¿en qué puedo ayudarte? 😊`;
+        document.getElementById('saludo_inicial').value = config.saludo_inicial || saludoDefault;
+
+        // ELIMINADO: compatibilidad
+        document.getElementById('horario').value = config.horario || '';
+        document.getElementById('cooldown').value = config.cooldown || '60';
+        document.getElementById('msg_texto_libre').value = config.msg_texto_libre || '';
+        
+        // Renderizar opciones del menú
+        renderizarOpcionesMenuCompleto(config);
+        
+        // Renderizar números bloqueados
+        renderizarNumerosBloqueados(config.numeros_bloqueados || []);
+        
+        // Vista previa del menú
+        actualizarVistaMenuPrincipal();
+        
+        console.log('✅ Configuración aplicada en el formulario');
+    }
+
+    function obtenerContenidoOpcion(config, opcion) {
+        const campo = opcion.campo_config;
+        if (campo === 'ubicacion') {
+            return `📍 ${config.empresa_nombre || 'Mi Empresa'}\n\n${config.empresa_direccion || 'Dirección'}\n\n${config.horario || 'Horario'}`;
+        }
+        return config[campo] || '';
+    }
+
+    function actualizarOpcion(id, campo, valor) {
+        if (!configActual || !configActual.opciones_menu) return;
+        const opcion = configActual.opciones_menu.find(op => op.id === id);
+        if (opcion) {
+            opcion[campo] = valor;
+            actualizarVistaMenuPrincipal();
+            console.log(`✅ Opción ${id} - ${campo} actualizado:`, valor);
+        }
+    }
+
+    function actualizarContenidoOpcion(id, contenido) {
+        if (!configActual || !configActual.opciones_menu) return;
+        const opcion = configActual.opciones_menu.find(op => op.id === id);
+        if (opcion && opcion.campo_config) {
+            configActual[opcion.campo_config] = contenido;
+            console.log(`✅ Contenido de opción ${id} actualizado`);
+        }
+    }
+
+    function toggleOpcion(id) {
+        if (!configActual || !configActual.opciones_menu) return;
+        const opcion = configActual.opciones_menu.find(op => op.id === id);
+        if (opcion) {
+            opcion.activa = !opcion.activa;
+            const card = document.getElementById(`opcion-card-${id}`);
+            if (card) {
+                card.className = `opcion-card ${opcion.activa ? 'activa' : 'inactiva'}`;
+                const badge = card.querySelector('.opcion-estado-badge');
+                badge.className = `opcion-estado-badge ${opcion.activa ? 'activa' : 'inactiva'}`;
+                badge.textContent = opcion.activa ? '✅ Activa' : '❌ Desactivada';
+                const toggle = card.querySelector('.opcion-toggle');
+                toggle.className = `opcion-toggle ${opcion.activa ? 'activo' : ''}`;
+            }
+            actualizarVistaMenuPrincipal();
+            mostrarAlerta(`Opción ${id} ${opcion.activa ? 'activada' : 'desactivada'}`, 'success');
+        }
+    }
+
+    // ========== RENDERIZADO DE OPCIONES ==========
+    function renderizarOpcionesMenuCompleto(config) {
+        const container = document.getElementById('opcionesMenuContainer');
+        container.innerHTML = '';
+        
+        if (!config.opciones_menu) {
+            console.warn('⚠️ No hay opciones_menu en la configuración');
+            return;
+        }
+        
+        config.opciones_menu.forEach(opcion => {
+            const contenidoActual = obtenerContenidoOpcion(config, opcion);
+            
+            const card = document.createElement('div');
+            card.className = `opcion-card ${opcion.activa ? 'activa' : 'inactiva'}`;
+            card.id = `opcion-card-${opcion.id}`;
+            
+            card.innerHTML = `
+                <div class="opcion-header">
+                    <div class="opcion-title">
+                        <span style="font-size: 1.5em;">${opcion.emoji}</span>
+                        <span>Opción ${opcion.id}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <span class="opcion-estado-badge ${opcion.activa ? 'activa' : 'inactiva'}">
+                            ${opcion.activa ? '✅ Activa' : '❌ Desactivada'}
+                        </span>
+                        <div class="opcion-toggle ${opcion.activa ? 'activo' : ''}" 
+                             onclick="toggleOpcion(${opcion.id})"></div>
+                    </div>
+                </div>
+                
+                <div class="opcion-fields">
+                    <div class="form-group">
+                        <label>Emoji:</label>
+                        <input type="text" class="emoji-input" id="emoji-${opcion.id}" 
+                               value="${opcion.emoji}" maxlength="2"
+                               onchange="actualizarOpcion(${opcion.id}, 'emoji', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre de la opción:</label>
+                        <input type="text" id="nombre-${opcion.id}" value="${opcion.nombre}"
+                               onchange="actualizarOpcion(${opcion.id}, 'nombre', this.value)">
+                    </div>
+                </div>
+                
+                <div class="opcion-content">
+                    <div class="form-group">
+                        <label>📝 Contenido que enviará el bot:</label>
+                        <textarea id="contenido-${opcion.id}"
+                                  onchange="actualizarContenidoOpcion(${opcion.id}, this.value)">${contenidoActual}</textarea>
+                        <small style="color: #6b7280; display: block; margin-top: 5px;">
+                            ${opcion.campo_config === 'ubicacion' ? 
+                              '⚠️ Esta opción envía ubicación automáticamente.' : 
+                              'Este es el mensaje completo que recibirá el usuario.'}
+                        </small>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(card);
+        });
+        
+        console.log(`✅ ${config.opciones_menu.length} opciones renderizadas`);
+    }
+
+    // ========== NÚMEROS BLOQUEADOS ==========
+    function renderizarNumerosBloqueados(numeros) {
+        const container = document.getElementById('numerosBloquedosList');
+        container.innerHTML = '';
+        
+        if (numeros.length === 0) {
+            container.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 10px;">No hay números bloqueados</div>';
+            return;
+        }
+        
+        numeros.forEach(numero => {
+            const item = document.createElement('div');
+            item.className = 'numero-item';
+            item.innerHTML = `
+                <span class="numero-texto">🔵 ${numero}</span>
+                <button class="btn btn-danger btn-small" onclick="eliminarNumeroBloqueado('${numero}')">
+                    🗑️ Eliminar
+                </button>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    function agregarNumeroBloqueado() {
+        const input = document.getElementById('nuevoNumeroBloqueado');
+        const numero = input.value.trim();
+        
+        if (!numero) {
+            mostrarAlerta('⚠️ Ingresa un número válido', 'error');
+            return;
+        }
+        
+        if (!configActual) {
+            mostrarAlerta('⚠️ Carga la configuración primero', 'error');
+            return;
+        }
+        
+        if (!configActual.numeros_bloqueados) {
+            configActual.numeros_bloqueados = [];
+        }
+        
+        if (configActual.numeros_bloqueados.includes(numero)) {
+            mostrarAlerta('⚠️ Este número ya está bloqueado', 'error');
+            return;
+        }
+        
+        configActual.numeros_bloqueados.push(numero);
+        renderizarNumerosBloqueados(configActual.numeros_bloqueados);
+        input.value = '';
+        mostrarAlerta(`✅ Número ${numero} bloqueado`, 'success');
+    }
+
+    function eliminarNumeroBloqueado(numero) {
+        if (!configActual || !configActual.numeros_bloqueados) return;
+        
+        configActual.numeros_bloqueados = configActual.numeros_bloqueados.filter(n => n !== numero);
+        renderizarNumerosBloqueados(configActual.numeros_bloqueados);
+        mostrarAlerta(`✅ Número ${numero} desbloqueado`, 'success');
+    }
+
+    // ========== VISTA PREVIA ==========
+    function actualizarVistaMenuPrincipal() {
+        if (!configActual || !configActual.opciones_menu) return;
+
+        // Usar el saludo personalizado del textarea
+        const saludoPersonalizado = document.getElementById('saludo_inicial').value || 'Hola, ¿en qué puedo ayudarte? 😊';
+
+        let menu = `${saludoPersonalizado}\n\n`;
+
+        const opcionesActivas = configActual.opciones_menu.filter(op => op.activa);
+        opcionesActivas.forEach(opcion => {
+            menu += `${opcion.id}. ${opcion.emoji} ${opcion.nombre}\n`;
+        });
+
+        menu += `\nEscribe el número de tu opción`;
+
+        document.getElementById('preview_menu').textContent = menu;
+    }
+
+    // CONTINÚA EN PARTE 3...
+    // ========== GUARDAR - CORREGIDO ==========
+     // ========== GUARDAR - VERSION FINAL MEJORADA ==========
+    async function guardarTodo() {
+        if (!configActual) {
+            mostrarAlerta('⚠️ Carga la configuración primero', 'error');
+            return;
+        }
+        
+        console.log('💾 Iniciando guardado...');
+        
+        // 1. Obtener estado actual de fotos y PDFs ANTES de modificar nada
+        let estadoFotosActual;
+        let estadoPdfsActual;
+        try {
+            const fotosResponse = await fetch(`${API_URL}/list-fotos-catalogo`);
+            estadoFotosActual = await fotosResponse.json();
+            console.log('📸 Estado actual de fotos del servidor:', estadoFotosActual);
+        } catch (e) {
+            console.warn('⚠️ No se pudo obtener estado de fotos:', e);
+            estadoFotosActual = configActual.fotos_catalogo || { habilitado: false, fotos: [] };
+        }
+        try {
+            const pdfsResponse = await fetch(`${API_URL}/list-pdfs-catalogo`);
+            estadoPdfsActual = await pdfsResponse.json();
+            console.log('📄 Estado actual de PDFs del servidor:', estadoPdfsActual);
+        } catch (e) {
+            console.warn('⚠️ No se pudo obtener estado de PDFs:', e);
+            estadoPdfsActual = configActual.pdfs_catalogo || { habilitado: false, pdfs: [] };
+        }
+        
+        // 2. Actualizar valores del formulario
+        configActual.empresa_nombre = document.getElementById('empresa_nombre').value;
+        configActual.empresa_telefono = document.getElementById('empresa_telefono').value;
+        configActual.empresa_direccion = document.getElementById('empresa_direccion').value;
+        configActual.empresa_maps = document.getElementById('empresa_maps').value;
+        configActual.horario = document.getElementById('horario').value;
+        configActual.cooldown = parseInt(document.getElementById('cooldown').value);
+        configActual.msg_texto_libre = document.getElementById('msg_texto_libre').value;
+
+        // Saludo personalizado
+        const saludoInicial = document.getElementById('saludo_inicial').value;
+        configActual.saludo_inicial = saludoInicial;
+
+        // Generar menu_principal con el saludo personalizado
+        let menuGenerado = `${saludoInicial}\n\n`;
+        const opcionesActivas = configActual.opciones_menu.filter(op => op.activa);
+        opcionesActivas.forEach(opcion => {
+            menuGenerado += `${opcion.id}. ${opcion.emoji} ${opcion.nombre}\n`;
+        });
+        menuGenerado += `\nEscribe el número de tu opción`;
+        configActual.menu_principal = menuGenerado;
+
+        console.log('💬 Saludo inicial:', saludoInicial);
+        console.log('📋 Menu generado:', menuGenerado);
+
+        // 3. PRESERVAR fotos_catalogo y pdfs_catalogo del servidor (no sobrescribir)
+        configActual.fotos_catalogo = estadoFotosActual;
+        configActual.pdfs_catalogo = estadoPdfsActual;
+
+        console.log('📸 Fotos a guardar:', configActual.fotos_catalogo);
+        console.log('📸 - Habilitado:', configActual.fotos_catalogo.habilitado);
+        console.log('📸 - Total fotos:', configActual.fotos_catalogo.fotos?.length || 0);
+        console.log('📄 PDFs a guardar:', configActual.pdfs_catalogo);
+        console.log('📄 - Habilitado:', configActual.pdfs_catalogo.habilitado);
+        console.log('📄 - Total PDFs:', configActual.pdfs_catalogo.pdfs?.length || 0);
+
+        try {
+            const response = await fetch(`${API_URL}/update-config`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(configActual)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                mostrarAlerta('✅ Configuración guardada - Fotos y PDFs preservados', 'success');
+                actualizarVistaMenuPrincipal();
+
+                // Verificar que se guardó correctamente
+                setTimeout(async () => {
+                    await cargarFotosCatalogo();
+                    await cargarPdfsCatalogo();
+                    console.log('✅ Verificación post-guardado completada');
+                }, 500);
+                
+            } else {
+                const error = await response.json();
+                mostrarAlerta('⚠️ Error al guardar: ' + (error.error || 'Error desconocido'), 'error');
+                console.error('❌ Error del servidor:', error);
+            }
+        } catch (error) {
+            mostrarAlerta('⚠️ Error de conexión', 'error');
+            console.error('❌ Error:', error);
+        }
+    }
+    // ========== EVENT LISTENERS ==========
+    // Actualizar vista previa cuando cambien estos campos
+    // Actualizar vista previa cuando cambia el saludo
+    ['saludo_inicial'].forEach(id => {
+        const elemento = document.getElementById(id);
+        if (elemento) {
+            elemento.addEventListener('input', actualizarVistaMenuPrincipal);
+        }
+    });
+
+    // ========== INICIALIZACIÓN ==========
+    window.onload = async function() {
+        console.log('🚀 Iniciando editor...');
+        await cargarDelServidor();
+        console.log('✅ Editor listo');
+    };
+
+    // ========== UTILIDADES DE DEBUG ==========
+    // Funciones para debugging en consola
+    window.debugConfig = function() {
+        console.log('📋 Configuración actual:', configActual);
+        console.log('📸 Fotos del catálogo:', configActual?.fotos_catalogo);
+    };
+
+    window.debugFotos = async function() {
+        const response = await fetch(`${API_URL}/list-fotos-catalogo`);
+        const data = await response.json();
+        console.log('📸 Fotos desde servidor:', data);
+    };
+</script>
+</body>
+</html>

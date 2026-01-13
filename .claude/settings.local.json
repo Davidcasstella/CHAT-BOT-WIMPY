@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la \"c:\\\\Users\\\\David\\\\Desktop\\\\TIENDA-WIMPY-FRONTEND\\\\CHAT-BOT-WIMPY\\\\audio\"\" 2>/dev/null || dir \"c:UsersDavidDesktopTIENDA-WIMPY-FRONTENDCHAT-BOT-WIMPYaudio \")",
+      "Bash(dir:*)",
+      "Bash(ls:*)"
+    ]
+  }
+}

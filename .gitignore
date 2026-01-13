@@ -1,0 +1,38 @@
+# Dependencias
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Variables de entorno
+.env
+.env.local
+.env.production
+
+# Datos de autenticación WhatsApp (IMPORTANTE: no subir)
+auth_info/
+
+# Archivos de audio y media (subir manualmente o usar volúmenes)
+audio/
+imagenes/catalogo/
+imagenes/pdfs/
+
+# Logs
+logs/
+*.log
+
+# Backups automáticos de configuración
+bot-config-backup-*.json
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos temporales
+*.tmp
+*.temp

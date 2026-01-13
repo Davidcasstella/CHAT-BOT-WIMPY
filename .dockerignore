@@ -1,0 +1,38 @@
+# Dependencias
+node_modules
+npm-debug.log
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Archivos de desarrollo
+*.md
+LICENSE
+
+# Archivos temporales
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Backups de configuración (se generan automáticamente)
+bot-config-backup-*.json
+
+# Datos de sesión de WhatsApp (se montan como volumen)
+auth_info/
+
+# Archivos de audio y media (se montan como volumen)
+audio/
+imagenes/
+menus/
+
+# Scripts de desarrollo
+diagnostico.js
+limpiar-sesion.js
