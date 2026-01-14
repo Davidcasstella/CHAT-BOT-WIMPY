@@ -129,16 +129,17 @@ class MessageProcessor {
         // ========== SI ESCRIBIÓ TEXTO LIBRE ==========
         else {
           const tieneLetras = /[a-zA-ZáéíóúÁÉÍÓÚñÑ']/.test(text);
-          
-          if (tieneLetras) {
-            // ========== TEXTO LIBRE - DERIVAR A ASESOR SIN REPETIR MENÚ ==========
+          const esInterrogante = text.trim() === '?';
+
+          if (tieneLetras || esInterrogante) {
+            // ========== TEXTO LIBRE O INTERROGANTE - DERIVAR A ASESOR SIN REPETIR MENÚ ==========
             await this.derivarAsesor(from, telefono);
           } else {
             // Es un número pero no válido
             const opcionesActivas = this.configManager.obtenerOpcionesActivas();
             const numerosValidos = opcionesActivas.map(op => op.id).join(', ');
-            await this.sock.sendMessage(from, { 
-              text: `⚠️ Por favor escribe una opción válida (${numerosValidos}):\n\n${this.configManager.obtenerConfig().menu_principal}` 
+            await this.sock.sendMessage(from, {
+              text: `⚠️ Por favor escribe una opción válida (${numerosValidos}):\n\n${this.configManager.obtenerConfig().menu_principal}`
             });
           }
         }
