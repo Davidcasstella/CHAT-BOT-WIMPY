@@ -50,11 +50,31 @@ class MessageProcessor {
       }
       
       // Extraer texto del mensaje
-      const text = (msg.message.conversation || 
+      const text = (msg.message.conversation ||
                    msg.message.extendedTextMessage?.text || '').trim();
-      
+
       const telefono = from.split('@')[0];
       console.log(`\n📩 Mensaje de ${telefono}: ${text}`);
+
+      // ========== DETECTAR SI ES RESPUESTA/CITA A UN MENSAJE ==========
+      const esRespuestaAMensaje = !!(msg.message.extendedTextMessage?.contextInfo?.quotedMessage);
+
+      if (esRespuestaAMensaje) {
+        console.log(`💬 Es una respuesta a un mensaje citado`);
+
+        // Recargar configuración
+        this.configManager.recargarConfiguracion();
+
+        // Verificar si está bloqueado
+        if (this.configManager.esNumeroBloqueado(telefono)) {
+          console.log(`🚫 Número bloqueado: ${telefono}`);
+          return;
+        }
+
+        // Derivar a asesor cuando responden/citan cualquier mensaje
+        await this.derivarAsesor(from, telefono);
+        return;
+      }
 
       // Recargar configuración antes de procesar
       this.configManager.recargarConfiguracion();
