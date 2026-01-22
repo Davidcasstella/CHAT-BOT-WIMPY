@@ -15,6 +15,7 @@
   "horario": "⏰ *Horario*\nLunes a Sábado: 7:00 AM - 8:00 PM\nDomingos: 8:00 AM - 11:00 AM",
   "metodos_pago": "💳 *MÉTODOS DE PAGO*\n\n💵 *Efectivo*\n• Pago en efectivo en nuestra tienda\n\n📱 *Transferencias y Apps*\n• Nequi\n• Daviplata\n• Bancolombia (Transferencia o Botón PSE)\n\n💳 *Tarjetas*\n• Visa\n• Mastercard\n• American Express\n\n🔌 *Pago de servicios*\n• Codensa (Pago con recibo de luz)\n\n📍 Todos los pagos pueden realizarse en nuestra tienda ubicada en:\nCalle 11a # 9-27, Tunja, Boyacá\n\n📞 Contacto: 305 2707907",
   "garantia": "🛡️ *GARANTÍA*\n\n✅ *Dispositivos Nuevos*\n• Garantía directamente con el fabricante (Apple)\n• Cobertura según términos del fabricante\n• Soporte en toda la red de servicio técnico autorizado\n\n✅ *Dispositivos Usados*\n• Garantía de 5 meses con Outlet Tech Boyacá\n• Cobertura contra defectos de fabricación\n• Soporte técnico incluido\n\n📧 *Garantía de Email*\n• Garantía del correo electrónico: DE POR VIDA\n• Soporte permanente para configuración de iCloud\n• Asistencia con cuenta Apple ID\n\n📋 *Condiciones*\n• Presentar factura de compra\n• No aplica para daños físicos o por mal uso\n• Revisión técnica sin costo\n\n📞 Más información: 305 2707907\n📍 Calle 11a # 9-27, Tunja, Boyacá",
+  "para_llevar": "📦 *PARA LLEVAR*\n\nConfigura este mensaje desde el panel de administración.",
   "opciones_menu": [
     {
       "id": 1,
@@ -46,10 +47,10 @@
     },
     {
       "id": 5,
-      "nombre": "Métodos de pago",
-      "emoji": "💳",
-      "activa": false,
-      "campo_config": "metodos_pago"
+      "nombre": "Para llevar",
+      "emoji": "📦",
+      "activa": true,
+      "campo_config": "para_llevar"
     },
     {
       "id": 6,
