@@ -225,6 +225,19 @@ class ConfigManager {
     });
   }
 
+  // Método para verificar si un número es de Colombia
+  esNumeroColombia(telefono) {
+    const numeroLimpio = telefono.replace(/\D/g, '');
+    // Números de Colombia empiezan con 57
+    // Ejemplo: 573125045730
+    return numeroLimpio.startsWith('57');
+  }
+
+  // Verificar si debe bloquear números extranjeros
+  bloquearNumerosExtranjeros() {
+    return this.config.bloquear_extranjeros === true;
+  }
+
   // Obtener opciones activas del menú
   obtenerOpcionesActivas() {
     return this.config.opciones_menu.filter(op => op.activa);

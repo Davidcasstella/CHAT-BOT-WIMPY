@@ -86,6 +86,13 @@ class MessageProcessor {
         return;
       }
 
+      // Verificar si es número extranjero y está activado el bloqueo
+      if (this.configManager.bloquearNumerosExtranjeros() && !this.configManager.esNumeroColombia(telefono)) {
+        console.log(`🌍 Número extranjero bloqueado: ${telefono}`);
+        console.log('⭕️ Bot no responderá a números de otros países\n');
+        return;
+      }
+
       await this.manejarMensaje(from, text, telefono);
 
     } catch (error) {
