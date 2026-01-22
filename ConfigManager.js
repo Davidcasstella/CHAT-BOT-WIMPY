@@ -440,16 +440,7 @@ Domingos: 8:00 AM - 11:00 AM`;
     return `📦 *PARA LLEVAR*
 
 🎁 *Empaque especial*
-Los productos que requieran caja o icopor para su transporte tienen un costo adicional de *$700 pesos*.
-
-📋 *Aplica para:*
-- Equipos que necesiten protección extra
-- Productos frágiles
-- Accesorios que requieran empaque especial
-
-💡 *Nota:* El empaque garantiza que tu producto llegue en perfectas condiciones.
-
-📞 Para más información: ${telefono}`;
+Los productos que requieran caja o icopor para su transporte tienen un costo adicional de *$700 pesos*.`;
   }
 
   obtenerMetodosPago(config = this.config) {
