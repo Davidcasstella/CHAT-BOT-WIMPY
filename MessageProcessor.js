@@ -102,37 +102,20 @@ class MessageProcessor {
       await this.sock.sendPresenceUpdate('composing', from);
 
       const esNuevoUsuario = estadoActual === 'inicial';
-      const esComandoInicio = this.menuHandler.esComandoInicio(text);
       const esOpcionMenu = this.menuHandler.esOpcionMenu(text);
 
       const minutosRestantes = this.cooldownManager.estaEnCooldown(from);
       const estaEnMenuActivo = estadoActual === 'menu_principal' || estadoActual === 'viendo_productos';
-      
-      const esNumeroSolo = /^[0-9]+$/.test(text.trim());
-      const comandosReactivar = ['menu', 'inicio', 'hola'];
-      const quiereReactivar = esNumeroSolo || comandosReactivar.some(cmd => text.toLowerCase().includes(cmd));
-      const estaEsperandoAsesor = estadoActual === 'esperando_asesor';
 
       // Verificar cooldown
-      if (minutosRestantes && !estaEnMenuActivo && !esComandoInicio && !(estaEsperandoAsesor && quiereReactivar)) {
+      if (minutosRestantes && !estaEnMenuActivo) {
         console.log(`⏳ Cooldown: ${minutosRestantes} min\n`);
         await this.sock.sendPresenceUpdate('paused', from);
         return;
       }
 
-      // Nuevo usuario - mostrar menú
+      // Nuevo usuario - mostrar menú UNA SOLA VEZ
       if (esNuevoUsuario) {
-        if (!minutosRestantes) {
-          this.cooldownManager.registrarRespuesta(from);
-        }
-
-        await this.menuHandler.mostrarMenuPrincipal(from, telefono);
-        await this.sock.sendPresenceUpdate('paused', from);
-        return;
-      }
-
-      // Comando de inicio SOLO si NO está ya en menú principal
-      if (esComandoInicio && estadoActual !== 'menu_principal') {
         if (!minutosRestantes) {
           this.cooldownManager.registrarRespuesta(from);
         }
@@ -208,20 +191,9 @@ class MessageProcessor {
         return;
       } 
       
-      // Usuario esperando asesor
+      // Usuario esperando asesor - NO responder nada
       else if (estadoActual === 'esperando_asesor') {
-        const quiereMenu = comandosReactivar.some(cmd => text.toLowerCase().includes(cmd));
-        const esNumeroSolo = /^[0-9]+$/.test(text.trim());
-        
-        if (quiereMenu || esNumeroSolo) {
-          this.cooldownManager.establecerEstado(from, 'menu_principal');
-          await this.sock.sendMessage(from, { 
-            text: this.configManager.obtenerConfig().menu_principal 
-          });
-          console.log(`✅ Bot reactivado`);
-        } else {
-          console.log(`🤖 Esperando asesor humano - No se responde`);
-        }
+        console.log(`🤖 Esperando asesor humano - No se responde`);
       }
 
       await this.sock.sendPresenceUpdate('paused', from);
