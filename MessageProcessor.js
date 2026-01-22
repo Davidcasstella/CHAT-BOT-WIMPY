@@ -133,29 +133,33 @@ class MessageProcessor {
 
       // ========== USUARIO EN MENÚ PRINCIPAL ==========
       if (estadoActual === 'menu_principal') {
-        
-        // ========== SI ES UNA OPCIÓN DEL MENÚ (1-6) ==========
+
+        // ========== SI ES UNA OPCIÓN DEL MENÚ (1-7) PURA (sin texto adicional) ==========
         if (esOpcionMenu) {
           const opcionId = parseInt(text.trim());
           if (this.configManager.esOpcionActiva(opcionId)) {
-            // Procesar la opción (esto ya envía el menú automáticamente)
+            // Procesar la opción
             await this.menuHandler.procesarOpcionMenu(from, text, telefono);
           } else {
-            await this.sock.sendMessage(from, { 
-              text: `⚠️ Esa opción no está disponible.\n\n${this.configManager.obtenerConfig().menu_principal}` 
+            await this.sock.sendMessage(from, {
+              text: `⚠️ Esa opción no está disponible.\n\n${this.configManager.obtenerConfig().menu_principal}`
             });
           }
-        } 
+        }
         // ========== SI ESCRIBIÓ TEXTO LIBRE ==========
         else {
           const tieneLetras = /[a-zA-ZáéíóúÁÉÍÓÚñÑ']/.test(text);
           const esInterrogante = text.trim() === '?';
+          const esNumeroConTexto = /[0-9]/.test(text) && tieneLetras;
 
-          if (tieneLetras || esInterrogante) {
-            // ========== TEXTO LIBRE O INTERROGANTE - DERIVAR A ASESOR SIN REPETIR MENÚ ==========
+          if (esNumeroConTexto) {
+            // ========== NÚMERO CON TEXTO - NO RESPONDER NADA ==========
+            console.log(`🔇 Mensaje ignorado (número con texto): "${text}"`);
+          } else if (tieneLetras || esInterrogante) {
+            // ========== TEXTO LIBRE O INTERROGANTE - DERIVAR A ASESOR ==========
             await this.derivarAsesor(from, telefono);
           } else {
-            // Es un número pero no válido
+            // Es un número pero no válido (ej: 8, 9, 10, etc)
             const opcionesActivas = this.configManager.obtenerOpcionesActivas();
             const numerosValidos = opcionesActivas.map(op => op.id).join(', ');
             await this.sock.sendMessage(from, {
@@ -163,7 +167,7 @@ class MessageProcessor {
             });
           }
         }
-        
+
         await this.sock.sendPresenceUpdate('paused', from);
         return;
       } 

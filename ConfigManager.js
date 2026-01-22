@@ -73,13 +73,17 @@ class ConfigManager {
       }
     }
 
-    // Asegurar métodos de pago y garantía
+    // Asegurar métodos de pago, garantía y para llevar
     if (!config.metodos_pago) {
       config.metodos_pago = this.obtenerMetodosPago(config);
     }
-    
+
     if (!config.garantia) {
       config.garantia = this.obtenerGarantia(config);
+    }
+
+    if (!config.para_llevar) {
+      config.para_llevar = this.obtenerParaLlevar();
     }
 
     // Regenerar menú basado en opciones activas
@@ -118,13 +122,20 @@ class ConfigManager {
       },
       {
         id: 5,
+        nombre: "Para llevar",
+        emoji: "📦",
+        activa: true,
+        campo_config: "para_llevar"
+      },
+      {
+        id: 6,
         nombre: "Métodos de pago",
         emoji: "💳",
         activa: true,
         campo_config: "metodos_pago"
       },
       {
-        id: 6,
+        id: 7,
         nombre: "Garantía",
         emoji: "🛡️",
         activa: true,
@@ -191,7 +202,8 @@ class ConfigManager {
       catalogo_macbooks: this.obtenerCatalogoMacBooks(),
       accesorios_macbook: this.obtenerAccesoriosMacBook(),
       compatibilidad: this.obtenerCompatibilidad(),
-      horario: this.obtenerHorario()
+      horario: this.obtenerHorario(),
+      para_llevar: this.obtenerParaLlevar()
     };
     
     // Generar métodos de pago y garantía
@@ -421,6 +433,23 @@ MacBook Pro M1 / M2 / M3 / M4`;
     return `⏰ *Horario*
 Lunes a Sábado: 7:00 AM - 8:00 PM
 Domingos: 8:00 AM - 11:00 AM`;
+  }
+
+  obtenerParaLlevar() {
+    const telefono = this.config?.empresa_telefono || '305 2707907';
+    return `📦 *PARA LLEVAR*
+
+🎁 *Empaque especial*
+Los productos que requieran caja o icopor para su transporte tienen un costo adicional de *$700 pesos*.
+
+📋 *Aplica para:*
+- Equipos que necesiten protección extra
+- Productos frágiles
+- Accesorios que requieran empaque especial
+
+💡 *Nota:* El empaque garantiza que tu producto llegue en perfectas condiciones.
+
+📞 Para más información: ${telefono}`;
   }
 
   obtenerMetodosPago(config = this.config) {

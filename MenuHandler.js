@@ -192,60 +192,48 @@ class MenuHandler {
         case '1': // Listado de iPhones
           await this.sock.sendMessage(from, { text: config.catalogo_iphones });
           console.log(`✅ Catálogo iPhone enviado a ${telefono}`);
-          
-          // ========== PAUSA Y REENVIAR MENÚ ==========
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          await this.mostrarMenuSolo(from);
+          this.cooldownManager.establecerEstado(from, 'menu_principal');
           break;
 
        case '2': // Accesorios iPhone
           await this.sock.sendMessage(from, { text: config.accesorios_iphone });
           console.log(`✅ Accesorios iPhone enviados a ${telefono}`);
-          
-          // ========== PAUSA Y REENVIAR MENÚ ==========
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          await this.mostrarMenuSolo(from);
+          this.cooldownManager.establecerEstado(from, 'menu_principal');
           break;
 
         case '3': // Listado MacBooks
           await this.sock.sendMessage(from, { text: config.catalogo_macbooks });
           console.log(`✅ Catálogo MacBook enviado a ${telefono}`);
-          
-          // ========== PAUSA Y REENVIAR MENÚ ==========
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          await this.mostrarMenuSolo(from);
+          this.cooldownManager.establecerEstado(from, 'menu_principal');
           break;
 
         case '4': // Ubicación
           await this.enviarUbicacion(from, config);
           console.log(`✅ Ubicación enviada a ${telefono}`);
-          
-          // ========== PAUSA Y REENVIAR MENÚ ==========
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          await this.mostrarMenuSolo(from);
+          this.cooldownManager.establecerEstado(from, 'menu_principal');
           break;
 
-        case '5': // Métodos de pago
+        case '5': // Para llevar
+          await this.sock.sendMessage(from, { text: config.para_llevar });
+          console.log(`✅ Info para llevar enviada a ${telefono}`);
+          this.cooldownManager.establecerEstado(from, 'menu_principal');
+          break;
+
+        case '6': // Métodos de pago
           await this.sock.sendMessage(from, { text: config.metodos_pago });
           console.log(`✅ Métodos de pago enviados a ${telefono}`);
-          
-          // ========== PAUSA Y REENVIAR MENÚ ==========
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          await this.mostrarMenuSolo(from);
+          this.cooldownManager.establecerEstado(from, 'menu_principal');
           break;
 
-        case '6': // Garantía
+        case '7': // Garantía
           await this.sock.sendMessage(from, { text: config.garantia });
           console.log(`✅ Información de garantía enviada a ${telefono}`);
-          
-          // ========== PAUSA Y REENVIAR MENÚ ==========
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          await this.mostrarMenuSolo(from);
+          this.cooldownManager.establecerEstado(from, 'menu_principal');
           break;
 
         default:
-          await this.sock.sendMessage(from, { 
-            text: `⚠️ Opción no válida.\n\n${config.menu_principal}` 
+          await this.sock.sendMessage(from, {
+            text: `⚠️ Opción no válida.\n\n${config.menu_principal}`
           });
           break;
       }
@@ -284,11 +272,14 @@ class MenuHandler {
   }
 
   esOpcionMenu(text) {
-    return ['1', '2', '3', '4', '5', '6', '0'].includes(text.trim());
+    // Solo aceptar números puros del 0-7, sin texto adicional
+    const textoLimpio = text.trim();
+    return ['1', '2', '3', '4', '5', '6', '7', '0'].includes(textoLimpio) && /^[0-7]$/.test(textoLimpio);
   }
 
   esOpcionValida(text) {
-    return ['1', '2', '3', '4', '5', '6'].includes(text.trim());
+    const textoLimpio = text.trim();
+    return ['1', '2', '3', '4', '5', '6', '7'].includes(textoLimpio) && /^[1-7]$/.test(textoLimpio);
   }
 }
 
