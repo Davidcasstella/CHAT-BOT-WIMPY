@@ -436,11 +436,7 @@ Domingos: 8:00 AM - 11:00 AM`;
   }
 
   obtenerParaLlevar() {
-    const telefono = this.config?.empresa_telefono || '305 2707907';
-    return `📦 *PARA LLEVAR*
-
-🎁 *Empaque especial*
-Los productos que requieran caja o icopor para su transporte tienen un costo adicional de *$700 pesos*.`;
+    return `📦 *PARA LLEVAR*\n\nConfigura este mensaje desde el panel de administración.`;
   }
 
   obtenerMetodosPago(config = this.config) {
