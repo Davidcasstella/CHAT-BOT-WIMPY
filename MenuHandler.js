@@ -267,8 +267,11 @@ class MenuHandler {
   }
 
   esComandoInicio(text) {
-    const comandosInicio = ['hola', 'menu', 'inicio', 'ola', 'hi', 'hello', 'buenas'];
-    return comandosInicio.some(cmd => text.toLowerCase().includes(cmd));
+    // Solo detectar si el mensaje es EXACTAMENTE un comando de inicio
+    // o es muy corto y contiene el comando (ej: "hola!", "hola?", "buenas!")
+    const textoLimpio = text.toLowerCase().trim().replace(/[!?.,]+$/, '');
+    const comandosInicio = ['hola', 'menu', 'inicio', 'ola', 'hi', 'hello', 'buenas', 'buenos dias', 'buenas tardes', 'buenas noches'];
+    return comandosInicio.includes(textoLimpio);
   }
 
   esOpcionMenu(text) {

@@ -120,12 +120,23 @@ class MessageProcessor {
         return;
       }
 
-      // Nuevo usuario o comando de inicio
-      if (esNuevoUsuario || esComandoInicio) {
+      // Nuevo usuario - mostrar menú
+      if (esNuevoUsuario) {
         if (!minutosRestantes) {
           this.cooldownManager.registrarRespuesta(from);
         }
-        
+
+        await this.menuHandler.mostrarMenuPrincipal(from, telefono);
+        await this.sock.sendPresenceUpdate('paused', from);
+        return;
+      }
+
+      // Comando de inicio SOLO si NO está ya en menú principal
+      if (esComandoInicio && estadoActual !== 'menu_principal') {
+        if (!minutosRestantes) {
+          this.cooldownManager.registrarRespuesta(from);
+        }
+
         await this.menuHandler.mostrarMenuPrincipal(from, telefono);
         await this.sock.sendPresenceUpdate('paused', from);
         return;
