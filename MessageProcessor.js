@@ -10,48 +10,63 @@ class MessageProcessor {
   async procesarMensaje(msg, miNumero) {
     try {
       if (msg.key.fromMe) return;
-      
+
+      // 🔴 Verificar si el bot está activo
+      this.configManager.recargarConfiguracion();
+      const config = this.configManager.obtenerConfig();
+      if (config.bot_activo === false) {
+        console.log('🔴 Bot desactivado - Mensaje ignorado');
+        return;
+      }
+
       const from = msg.key.remoteJid;
       const messageId = msg.key.id;
-      
+
       if (from === 'status@broadcast') return;
-      
+
+      // ❌ Ignorar mensajes de grupos, comunidades y listas de difusión
+      // En Baileys: grupos → @g.us | privados → @s.whatsapp.net
+      if (from.endsWith('@g.us') || from.endsWith('@broadcast')) {
+        console.log(`⛔ Ignorando mensaje de grupo/difusión: ${from}`);
+        return;
+      }
+
       // Validar que no sea mi propio número
       const remitente = from.split('@')[0];
       if (miNumero && remitente === miNumero) {
         console.log('⛔ Ignorando mensaje de mi propio número');
         return;
       }
-      
+
       // Verificar duplicados
       if (this.cooldownManager.esMensajeDuplicado(from, messageId)) {
         return;
       }
-      
+
       // ========== DETECTAR AUDIO ==========
       const esAudio = !!(msg.message.audioMessage || msg.message.ptt);
-      
+
       if (esAudio) {
         const telefono = from.split('@')[0];
         console.log(`\n🎤 Audio recibido de ${telefono}`);
-        
+
         // Recargar configuración
         this.configManager.recargarConfiguracion();
-        
+
         // Verificar si está bloqueado
         if (this.configManager.esNumeroBloqueado(telefono)) {
           console.log(`🚫 Número bloqueado: ${telefono}`);
           return;
         }
-        
+
         // Enviar mensaje de derivación a asesor
         await this.derivarAsesor(from, telefono);
         return;
       }
-      
+
       // Extraer texto del mensaje
       const text = (msg.message.conversation ||
-                   msg.message.extendedTextMessage?.text || '').trim();
+        msg.message.extendedTextMessage?.text || '').trim();
 
       const telefono = from.split('@')[0];
       console.log(`\n📩 Mensaje de ${telefono}: ${text}`);
@@ -103,7 +118,7 @@ class MessageProcessor {
   async manejarMensaje(from, text, telefono) {
     try {
       const estadoActual = this.cooldownManager.obtenerEstado(from);
-      
+
       console.log(`📊 Estado: ${estadoActual}`);
 
       await this.sock.sendPresenceUpdate('composing', from);
@@ -171,13 +186,13 @@ class MessageProcessor {
 
         await this.sock.sendPresenceUpdate('paused', from);
         return;
-      } 
-      
+      }
+
       // ========== USUARIO VIENDO PRODUCTOS (por compatibilidad) ==========
       else if (estadoActual === 'viendo_productos') {
         if (text === '0') {
-          await this.sock.sendMessage(from, { 
-            text: this.configManager.obtenerConfig().menu_principal 
+          await this.sock.sendMessage(from, {
+            text: this.configManager.obtenerConfig().menu_principal
           });
           this.cooldownManager.establecerEstado(from, 'menu_principal');
           console.log(`✅ Usuario regresó al menú`);
@@ -186,8 +201,8 @@ class MessageProcessor {
           if (this.configManager.esOpcionActiva(opcionId)) {
             await this.menuHandler.procesarOpcionMenu(from, text, telefono);
           } else {
-            await this.sock.sendMessage(from, { 
-              text: `⚠️ Esa opción no está disponible.\n\n${this.configManager.obtenerConfig().menu_principal}` 
+            await this.sock.sendMessage(from, {
+              text: `⚠️ Esa opción no está disponible.\n\n${this.configManager.obtenerConfig().menu_principal}`
             });
           }
         } else {
@@ -196,8 +211,8 @@ class MessageProcessor {
         }
         await this.sock.sendPresenceUpdate('paused', from);
         return;
-      } 
-      
+      }
+
       // Usuario esperando asesor - NO responder nada
       else if (estadoActual === 'esperando_asesor') {
         console.log(`🤖 Esperando asesor humano - No se responde`);
@@ -212,7 +227,7 @@ class MessageProcessor {
 
   async derivarAsesor(from, telefono) {
     this.cooldownManager.establecerEstado(from, 'esperando_asesor');
-    await this.sock.sendMessage(from, { 
+    await this.sock.sendMessage(from, {
       text: this.configManager.obtenerConfig().msg_texto_libre
     });
     console.log(`👤 Bot detenido - Usuario será atendido por asesor`);

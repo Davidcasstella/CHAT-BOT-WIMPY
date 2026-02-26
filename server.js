@@ -46,7 +46,7 @@ const audioStorage = multer.diskStorage({
   }
 });
 
-const uploadAudio = multer({ 
+const uploadAudio = multer({
   storage: audioStorage,
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: function (req, file, cb) {
@@ -138,9 +138,9 @@ async function inicializarBot() {
   messageProcessor.sock = whatsappConnection.sock;
   menuHandler = new MenuHandler(null, configManager, cooldownManager);
   messageProcessor.menuHandler = menuHandler;
-  
+
   await whatsappConnection.conectar();
-  
+
   const intervalo = setInterval(() => {
     if (whatsappConnection.obtenerSock()) {
       messageProcessor.sock = whatsappConnection.obtenerSock();
@@ -165,7 +165,7 @@ app.get('/status', (req, res) => {
   const estadisticas = cooldownManager.obtenerEstadisticas();
   const usuariosActivos = cooldownManager.obtenerUsuariosActivos();
 
-  res.json({ 
+  res.json({
     status: estado.conectado ? 'conectado' : 'desconectado',
     empresa: config.empresa_nombre,
     cooldownMinutos: config.cooldown,
@@ -179,13 +179,13 @@ app.post('/update-config', (req, res) => {
   try {
     const newConfig = req.body;
     const guardado = configManager.guardarConfiguracion(newConfig);
-    
+
     if (guardado) {
       cooldownManager.actualizarCooldownMinutos(newConfig.cooldown);
       console.log('✅ Configuración actualizada en tiempo real');
-      res.json({ 
+      res.json({
         message: 'Configuración actualizada en tiempo real',
-        success: true 
+        success: true
       });
     } else {
       res.status(500).json({ error: 'Error al guardar configuración' });
@@ -277,16 +277,16 @@ app.post('/upload-foto-catalogo', uploadCatalogo.single('foto'), async (req, res
     if (!req.file) {
       return res.status(400).json({ error: 'No se recibió ninguna imagen' });
     }
-    
+
     const descripcion = req.body.descripcion || '';
     const archivoOriginal = req.file.path;
     const pesoOriginal = req.file.size;
-    
+
     console.log(`📸 Imagen recibida: ${req.file.filename} (${(pesoOriginal / 1024).toFixed(2)} KB)`);
-    
+
     // ========== COMPRESIÓN AUTOMÁTICA CON SHARP ==========
     const sharp = require('sharp');
-    
+
     try {
       // Comprimir imagen manteniendo buena calidad
       await sharp(archivoOriginal)
@@ -294,42 +294,42 @@ app.post('/upload-foto-catalogo', uploadCatalogo.single('foto'), async (req, res
           fit: 'inside',           // Mantiene proporciones
           withoutEnlargement: true // No agranda imágenes pequeñas
         })
-        .jpeg({ 
+        .jpeg({
           quality: 80,             // Calidad 80% (buen balance)
           progressive: true,       // Carga progresiva
           mozjpeg: true           // Mejor compresión
         })
         .toFile(archivoOriginal + '.optimized');
-      
+
       // Reemplazar archivo original con el optimizado
       fs.unlinkSync(archivoOriginal);
       fs.renameSync(archivoOriginal + '.optimized', archivoOriginal);
-      
+
       // Obtener nuevo tamaño
       const stats = fs.statSync(archivoOriginal);
       const pesoComprimido = stats.size;
       const porcentajeReduccion = ((pesoOriginal - pesoComprimido) / pesoOriginal * 100).toFixed(1);
-      
+
       console.log(`✅ Imagen comprimida:`);
       console.log(`   - Original: ${(pesoOriginal / 1024).toFixed(2)} KB`);
       console.log(`   - Comprimida: ${(pesoComprimido / 1024).toFixed(2)} KB`);
       console.log(`   - Reducción: ${porcentajeReduccion}% 📉`);
-      
+
     } catch (compressError) {
       console.warn('⚠️ Error al comprimir, usando original:', compressError.message);
     }
-    
+
     // ========== GUARDAR EN CONFIGURACIÓN ==========
     configManager.recargarConfiguracion();
     const config = configManager.obtenerConfig();
-    
+
     if (!config.fotos_catalogo) {
       config.fotos_catalogo = { habilitado: false, fotos: [] };
     }
     if (!Array.isArray(config.fotos_catalogo.fotos)) {
       config.fotos_catalogo.fotos = [];
     }
-    
+
     config.fotos_catalogo.fotos.push({
       filename: req.file.filename,
       descripcion: descripcion,
@@ -337,14 +337,14 @@ app.post('/upload-foto-catalogo', uploadCatalogo.single('foto'), async (req, res
       timestamp: Date.now(),
       pesoKB: (fs.statSync(archivoOriginal).size / 1024).toFixed(2)
     });
-    
+
     const guardado = configManager.guardarConfiguracion(config);
-    
+
     if (guardado) {
       const stats = fs.statSync(archivoOriginal);
       console.log(`📸 Total de fotos en catálogo: ${config.fotos_catalogo.fotos.length}`);
-      
-      res.json({ 
+
+      res.json({
         message: 'Foto del catálogo subida y comprimida correctamente',
         filename: req.file.filename,
         path: `/imagenes/catalogo/${req.file.filename}`,
@@ -367,22 +367,22 @@ app.delete('/delete-foto-catalogo/:filename', (req, res) => {
   try {
     const filename = req.params.filename;
     const config = configManager.obtenerConfig();
-    
+
     if (config.fotos_catalogo && config.fotos_catalogo.fotos) {
       const rutaFoto = path.join(__dirname, 'imagenes', 'catalogo', filename);
-      
+
       // Eliminar archivo físico
       if (fs.existsSync(rutaFoto)) {
         fs.unlinkSync(rutaFoto);
       }
-      
+
       // Eliminar de configuración
       config.fotos_catalogo.fotos = config.fotos_catalogo.fotos.filter(
         foto => foto.filename !== filename
       );
-      
+
       configManager.guardarConfiguracion(config);
-      
+
       console.log(`✅ Foto del catálogo eliminada: ${filename}`);
       res.json({ message: 'Foto eliminada correctamente', success: true });
     } else {
@@ -399,21 +399,21 @@ app.post('/toggle-fotos-catalogo', (req, res) => {
     // CORREGIDO: Recargar antes de modificar
     configManager.recargarConfiguracion();
     const config = configManager.obtenerConfig();
-    
+
     if (!config.fotos_catalogo) {
       config.fotos_catalogo = { habilitado: false, fotos: [] };
     }
-    
+
     config.fotos_catalogo.habilitado = !config.fotos_catalogo.habilitado;
-    
+
     const guardado = configManager.guardarConfiguracion(config);
-    
+
     if (guardado) {
       console.log(`✅ Fotos del catálogo ${config.fotos_catalogo.habilitado ? 'activadas' : 'desactivadas'}`);
-      res.json({ 
+      res.json({
         habilitado: config.fotos_catalogo.habilitado,
         message: `Fotos del catálogo ${config.fotos_catalogo.habilitado ? 'activadas' : 'desactivadas'}`,
-        success: true 
+        success: true
       });
     } else {
       res.status(500).json({ error: 'Error al guardar configuración' });
@@ -565,7 +565,7 @@ app.get('/qr', (req, res) => {
 
   const estado = whatsappConnection.obtenerEstado();
   const qr = whatsappConnection.obtenerQR();
-  
+
   if (qr) {
     res.json({ qr: qr, connected: false });
   } else if (estado.conectado) {
@@ -578,17 +578,17 @@ app.get('/qr', (req, res) => {
 app.post('/reset-cooldown/:telefono', (req, res) => {
   const telefono = req.params.telefono + '@s.whatsapp.net';
   cooldownManager.resetearCooldown(telefono);
-  
-  res.json({ 
+
+  res.json({
     message: `Cooldown eliminado para ${req.params.telefono}`,
-    puedeResponder: true 
+    puedeResponder: true
   });
 });
 
 app.post('/reset-all-cooldowns', (req, res) => {
   const cantidad = cooldownManager.resetearTodosCooldowns();
-  res.json({ 
-    message: `${cantidad} cooldowns eliminados correctamente` 
+  res.json({
+    message: `${cantidad} cooldowns eliminados correctamente`
   });
 });
 
@@ -600,9 +600,9 @@ app.post('/clear-cache', (req, res) => {
 app.post('/force-reconnect', async (req, res) => {
   try {
     console.log('🔄 Reconexión forzada');
-    
+
     if (!whatsappConnection) {
-      res.json({ 
+      res.json({
         message: 'Inicializando conexión...',
         success: true
       });
@@ -611,22 +611,22 @@ app.post('/force-reconnect', async (req, res) => {
     }
 
     const estado = whatsappConnection.obtenerEstado();
-    
+
     if (estado.conectado) {
-      return res.json({ 
+      return res.json({
         message: 'Ya está conectado a WhatsApp',
         success: false,
         connected: true
       });
     }
-    
+
     whatsappConnection.forzarCierre();
-    
+
     setTimeout(async () => {
       await whatsappConnection.conectar();
     }, 1000);
-    
-    res.json({ 
+
+    res.json({
       message: 'Reconexión forzada',
       success: true
     });
@@ -636,16 +636,36 @@ app.post('/force-reconnect', async (req, res) => {
   }
 });
 
-app.post('/logout', async (req, res) => {
+app.post('/toggle-bot', (req, res) => {
+  try {
+    configManager.recargarConfiguracion();
+    const config = configManager.obtenerConfig();
+    config.bot_activo = !config.bot_activo;
+    configManager.guardarConfiguracion(config);
+    const estado = config.bot_activo ? 'ACTIVADO 🟢' : 'DESACTIVADO 🔴';
+    console.log(`🤖 Bot ${estado}`);
+    res.json({ bot_activo: config.bot_activo, message: `Bot ${estado}`, success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/bot-status', (req, res) => {
+  configManager.recargarConfiguracion();
+  const config = configManager.obtenerConfig();
+  res.json({ bot_activo: config.bot_activo !== false });
+});
+
+app.post  ('/logout', async (req, res) => {
   try {
     if (whatsappConnection) {
       const cerrado = await whatsappConnection.cerrarSesion();
-      
+
       if (cerrado) {
         setTimeout(() => {
           whatsappConnection.conectar();
         }, 2000);
-        
+
         res.json({ message: 'Sesión cerrada correctamente' });
       } else {
         res.json({ message: 'No hay sesión activa' });
@@ -662,7 +682,7 @@ app.post('/logout', async (req, res) => {
 app.post('/clear-session', async (req, res) => {
   try {
     const authFolder = path.join(__dirname, 'auth_info');
-    
+
     if (whatsappConnection) {
       try {
         await whatsappConnection.cerrarSesion();
@@ -671,12 +691,12 @@ app.post('/clear-session', async (req, res) => {
       }
       whatsappConnection.forzarCierre();
     }
-    
+
     if (fs.existsSync(authFolder)) {
       fs.rmSync(authFolder, { recursive: true, force: true });
       console.log('✅ Sesión limpiada');
     }
-    
+
     setTimeout(() => {
       if (whatsappConnection) {
         whatsappConnection.conectar();
@@ -684,8 +704,8 @@ app.post('/clear-session', async (req, res) => {
         inicializarBot();
       }
     }, 3000);
-    
-    res.json({ 
+
+    res.json({
       message: 'Sesión limpiada - Generando nuevo QR',
       needsRestart: false,
       autoReconnect: true
@@ -700,12 +720,12 @@ app.post('/clear-session', async (req, res) => {
 
 app.listen(PORT, () => {
   const config = configManager.obtenerConfig();
-  
+
   console.log(`\n📱 BOT DE WHATSAPP - ${config.empresa_nombre} 🎯`);
   console.log(`🌐 Panel: http://localhost:${PORT}`);
   console.log(`📝 Editor: http://localhost:${PORT}/editor.html`);
   console.log(`📊 API: http://localhost:${PORT}/status\n`);
-  
+
   console.log('⚡ CARACTERÍSTICAS:');
   console.log('   • 🎤 Audio de saludo: ✅');
   console.log('   • 📸 Fotos del catálogo: ✅');
@@ -725,9 +745,9 @@ app.listen(PORT, () => {
       console.log(`📁 Carpeta "${carpeta}" creada`);
     }
   });
-  
+
   console.log('');
-  
+
   // Inicializar bot
   inicializarBot();
 });
